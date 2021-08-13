@@ -5,6 +5,8 @@ import Feed from '../components/Feed'
 import Header from '../components/Header'
 import Login from '../components/Login'
 import SideBar from '../components/SideBar'
+import Widgets from '../components/Widgets'
+import { db } from '../firebase'
 
 
 export default function Home({ session }) {
@@ -24,6 +26,7 @@ export default function Home({ session }) {
         {/* Feed */}
         <Feed />
         {/* Widget */}
+        <Widgets />
       </main>
     </div>
   )
@@ -32,9 +35,18 @@ export default function Home({ session }) {
 export async function getServerSideProps(context) {
   const session = await getSession(context);
 
+  const posts = await db.collection('posts').orderBy("timestamp", "desc").get();
+
+  const docs = posts.docs.map(post => ({
+    id: post.id,
+    ...post.data(),
+    timestamp: null
+  }))
+
   return {
     props: {
-      session
+      session,
+      posts:docs
     }
   }
 }
